@@ -1,6 +1,5 @@
 flask
 numpy
-os
 re
 scipy
 trimesh
