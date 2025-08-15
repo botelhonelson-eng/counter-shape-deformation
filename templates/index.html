@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8">
+    <title>Carregar STL</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
+          }
+        }
+      </script>
+
+  </head>
+  <body>
+    <div class="container">
+      <header>
+	      <div class="banner">
+	      	<div class="box-container">
+	      		<div class="box-background"></div>
+	      		<div class="box-banner-title">
+	      			<h1>BS- Be Shapes</h1>
+	      			<p>Suporting you always</p>
+	      		</div>
+	      	</div>
+	      	<div class="company-info-container">
+	      		<div class="company-info-background"></div>
+	      		<div class="company-info-titlebox">
+	      			<h2>Welcome to our web page.</h2>
+	      			<p>Discover tools designed to inspire confidence and deliver results.
+	      		</div>
+	      	</div>
+	      </div>
+      </header>
+      
+      <section>   
+        <div class="services-container">
+          
+          <div class="input-area">            
+            <h2>Deformed surface calculation</h2>           
+
+            <div class="drop-zone" id="drop-or"> 
+              
+              <p>Drop here nominal shape</p>
+              <input type="file" id="file-or" accept=".stl,.obj,.ply,.glb,.dae,.off,.3mf,.iv">
+            </div>
+
+            <div class="drop-zone" id="drop-def">
+              <p>Drop here current mold shape</p>
+              <input type="file" id="file-def" accept=".stl,.obj,.ply,.glb,.dae,.off,.3mf,.iv">
+            </div>
+
+            <div class="drop-zone" id="drop-med">
+              <p>Drop here real plastic result shape</p>
+              <input type="file" id="file-med" accept=".stl,.obj,.ply,.glb,.dae,.off,.3mf,.iv">
+            </div>
+
+            <label for="passo">Grid step (0.1 to 5.0):</label>
+            <input type="number" id="passo" value="3.0" step="0.1" min="0.1" max="5.0">
+
+            <label for="nivel_compensacao">Correction level (10 to 100%):</label>
+            <input type="number" id="nivel_compensacao" value="100" step="5" min="10" max="100">
+
+            
+            <div id="status"></div>
+            <div id="download-link"></div>           
+
+
+          </div>
+          <div class="output-area">   
+            <div class="buttons-area"> 
+              <button onclick="uploadFiles()">Press here for point mesh calculation</button>              
+            </div>
+            <div id="glb-viewer">              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+
+    <script>
+      const extensoesPermitidas = ['.stl', '.obj', '.ply', '.glb', '.dae', '.off', '.3mf', '.iv'];
+
+      const dropZones = [
+        { id: 'drop-or', inputId: 'file-or', file: null },
+        { id: 'drop-def', inputId: 'file-def', file: null },
+        { id: 'drop-med', inputId: 'file-med', file: null }
+      ];
+
+      dropZones.forEach(zone => {
+        const dropArea = document.getElementById(zone.id);
+        const fileInput = document.getElementById(zone.inputId);
+
+        dropArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropArea.classList.add('dragover');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+          dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropArea.classList.remove('dragover');
+          const file = e.dataTransfer.files[0];
+          if (file && extensoesPermitidas.some(ext => file.name.toLowerCase().endsWith(ext))) {
+            zone.file = file;
+            dropArea.querySelector('p').textContent = file.name;
+          } else {
+            alert("Please select válid files");
+          }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file && extensoesPermitidas.some(ext => file.name.toLowerCase().endsWith(ext))) {
+            zone.file = file;
+            dropArea.querySelector('p').textContent = file.name;
+          } else {
+            alert("Please select válid files");
+          }
+        });
+      });
+
+      function uploadFiles() {
+        const passo = document.getElementById('passo').value;
+        const nivel = document.getElementById('nivel_compensacao').value;
+        const formData = new FormData();
+        const status = document.getElementById('status');
+
+        if (!dropZones[0].file || !dropZones[1].file || !dropZones[2].file) {
+          alert("Please select 3 files.");
+          return;
+        }
+
+        formData.append("stl_or", dropZones[0].file);
+        formData.append("stl_def", dropZones[1].file);
+        formData.append("stl_med", dropZones[2].file);
+        formData.append("passo", passo);
+        formData.append("nivel_compensacao", nivel);
+
+        status.textContent = "⏳ Calculation ... please hold.";
+
+        fetch("/process-stl", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+
+
+          if (data.error) {
+            status.textContent = "❌ Error: " + data.error;
+          } else {
+            status.textContent = "✅ Calculation done!";
+            const link = document.createElement("a");
+            link.href = data.download_url;
+            link.textContent = "Download here xyz point file";
+            link.style.display = "block";
+                 
+            
+            document.getElementById("download-link").innerHTML = ""; // limpa conteúdo anterior
+            document.getElementById("download-link").appendChild(link);
+
+            mostrarGLB();
+          }
+        })
+        .catch(error => {
+          status.textContent = "❌ Error file processing.";
+          console.error("Error sending files:", error);
+        });
+      }
+    </script>
+
+    <script type="module">    
+
+      import * as THREE from "three";
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js';
+      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+
+      window.mostrarGLB = function () {
+        const container = document.getElementById('glb-viewer');
+        container.innerHTML = '';
+
+        const scene = new THREE.Scene();      
+        
+        scene.background = null;
+
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(2, 2, 2);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 0.1;
+        controls.maxDistance = 100;
+        controls.target.set(0, 0, 0);
+
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        directionalLight.position.set(3, 10, 5);      
+        directionalLight.castShadow = true;
+
+        scene.add(directionalLight);
+
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        scene.add(hemisphereLight);
+
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+
+        const loader = new GLTFLoader();
+        loader.load('/static/output.glb', function (gltf) {
+          const model = gltf.scene;
+          scene.add(model);
+
+          const box = new THREE.Box3().setFromObject(model);
+          const size = box.getSize(new THREE.Vector3());
+          const center = box.getCenter(new THREE.Vector3());
+
+          model.position.sub(center);
+
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = camera.fov * (Math.PI / 180);
+          const cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+          camera.position.z = cameraZ * 1.5;
+          camera.position.y = cameraZ * 0.5;
+          camera.lookAt(center);
+          controls.target.copy(center);
+          controls.update();
+        }, undefined, function (error) {
+          console.error('Erro ao carregar GLB:', error);
+        });
+
+        window.addEventListener('resize', () => {
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);        
+          // Luz segue a posição da câmara
+
+          directionalLight.position.copy(camera.position);
+          directionalLight.target.position.set(0, 0, 0);
+          directionalLight.target.updateMatrixWorld();
+
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        animate();
+      };
+    </script>
+  </body>
+</html>

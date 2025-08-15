@@ -1,0 +1,9 @@
+convert_to_stl_any
+def_3D
+flask
+gerar_stl_delaunay
+numpy
+os
+re
+scipy
+trimesh

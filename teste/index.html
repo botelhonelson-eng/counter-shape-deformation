@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Deformed Surface Calculation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🧠 Deformed Surface Calculation</h1>
+
+  <div class="upload-panel" id="upload-panel">
+    <div class="drop-zone" onclick="document.getElementById('nominal').click()">📁 Nominal shape (drag to here)</div>
+    <input type="file" id="nominal" accept=".stl">
+
+    <div class="drop-zone" onclick="document.getElementById('actual').click()">📁 Actual steel shape (drag to here)</div>
+    <input type="file" id="actual" accept=".stl">
+
+    <div class="drop-zone" onclick="document.getElementById('real').click()">📁 Actual real shape (drag to here)</div>
+    <input type="file" id="real" accept=".stl">
+
+    <label for="grid-step">🔢 Grid step:</label>
+    <input type="number" id="grid-step" min="0.01" step="0.01">
+
+    <label for="correction-level">🎯 Correction level (0–100%):</label>
+    <input type="range" id="correction-level" min="0" max="100">
+
+    <button onclick="startCalculation()">🚀 Calcular</button>
+  </div>
+
+  <div class="viewer-panel hidden" id="viewer-panel">
+    <div id="glb-viewer">[Janela 3D com visualização do .glb]</div>
+    <div class="status">✅ Status: cálculo concluído</div>
+    <div class="download"><button onclick="downloadTxt()">📄 Download TXT</button></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
