@@ -68,7 +68,7 @@ def process_stl():
         #scene.show()
        
         scene.export(os.path.join(app.root_path, 'static', 'output.glb'))
-        
+        scene.show()
 
         return jsonify({
             "download_url": f"/download/{filename}",
