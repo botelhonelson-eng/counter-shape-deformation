@@ -77,7 +77,7 @@ def process_stl():
 
     except Exception as e:        
         return jsonify({
-            "error": str(e, scene)
+            "error": str(e)
         }), 500
 
 @app.route('/download/<filename>', methods=['GET'])
