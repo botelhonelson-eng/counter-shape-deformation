@@ -24,6 +24,7 @@ def process_stl():
         extensao = os.path.splitext(request.files['stl_or'].filename)[1].lower()
         if extensao == '.iv':
             stl_or = convert_to_stl_any(stl_or_path)
+            stl_or.show()
         else:
             request.files['stl_or'].save(stl_or_path)
             stl_or = trimesh.load(stl_or_path)       
