@@ -5,3 +5,4 @@ trimesh
 gunicorn
 rtree
 pyglet
+pyglet<2
