@@ -24,7 +24,6 @@ def process_stl():
         extensao = os.path.splitext(request.files['stl_or'].filename)[1].lower()
         if extensao == '.iv':
             stl_or = convert_to_stl_any(stl_or_path)
-            stl_or.show()
         else:
             request.files['stl_or'].save(stl_or_path)
             stl_or = trimesh.load(stl_or_path)       
@@ -66,10 +65,9 @@ def process_stl():
 
 
         scene = trimesh.Scene([stl_or, stl_med, stl_def, stl_compensacao]) 
-        #scene.show()
        
         scene.export(os.path.join(app.root_path, 'static', 'output.glb'))
-        scene.show()
+        
 
         return jsonify({
             "download_url": f"/download/{filename}",
@@ -79,7 +77,7 @@ def process_stl():
 
     except Exception as e:        
         return jsonify({
-            "error": str(e)
+            "error": str(e, scene)
         }), 500
 
 @app.route('/download/<filename>', methods=['GET'])
