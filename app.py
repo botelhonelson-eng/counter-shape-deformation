@@ -50,7 +50,7 @@ def process_stl():
             request.files['stl_med'].save(stl_med_path)
 
             
-            app.logger.error(f"Erro no processamento: {request.files['stl_med'].filename}")
+            app.logger.error(stl_med_path)
 
 
             stl_med = trimesh.load(stl_med_path)   
