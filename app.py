@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory, jsonify, render_template, send_file
+from flask import Flask, request, send_from_directory, jsonify, render_template
 import os
 import trimesh
 from def_3D import def_3D
@@ -50,8 +50,8 @@ def process_stl():
             request.files['stl_med'].save(stl_med_path)
 
             
-            if 'stl_or' not in request.files or request.files['stl_med'].filename == '':
-                return jsonify({"error": "Ficheiro ''stl_med'' em falta"}), 400
+            app.logger.error(f"Erro no processamento: {request.files['stl_med'].filename}")
+
 
             stl_med = trimesh.load(stl_med_path)   
 
