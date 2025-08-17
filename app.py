@@ -1,9 +1,12 @@
-from flask import Flask, request, send_from_directory, jsonify, render_template
+from flask import Flask, request, send_from_directory, jsonify, render_template, send_file
 import os
 import trimesh
 from def_3D import def_3D
 from gerar_stl_delaunay import gerar_stl_delaunay
 from convert_to_stl_any import convert_to_stl_any
+import io
+
+
 
 app = Flask(__name__, static_folder='static')
 UPLOAD_FOLDER = 'uploads'
@@ -17,14 +20,14 @@ def index():
 
 @app.route('/process-stl', methods=['POST'])
 
-def process_stl():
-    
+def process_stl():    
     try:
         stl_or_path = os.path.join(UPLOAD_FOLDER, request.files['stl_or'].filename)
         extensao = os.path.splitext(request.files['stl_or'].filename)[1].lower()
         if extensao == '.iv':
             stl_or = convert_to_stl_any(stl_or_path)
         else:
+
             request.files['stl_or'].save(stl_or_path)
             stl_or = trimesh.load(stl_or_path)       
 
@@ -45,6 +48,11 @@ def process_stl():
             stl_med = convert_to_stl_any(stl_med_path)
         else:
             request.files['stl_med'].save(stl_med_path)
+
+            
+            if 'stl_or' not in request.files or request.files['stl_med'].filename == '':
+                return jsonify({"error": "Ficheiro ''stl_med'' em falta"}), 400
+
             stl_med = trimesh.load(stl_med_path)   
 
         
@@ -65,7 +73,7 @@ def process_stl():
 
 
         scene = trimesh.Scene([stl_or, stl_med, stl_def, stl_compensacao]) 
-       
+        
         scene.export(os.path.join(app.root_path, 'static', 'output.glb'))
         
 
@@ -90,3 +98,4 @@ def serve_output_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
