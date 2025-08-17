@@ -169,7 +169,7 @@
           }
         })
         .catch(error => {
-          status.textContent = "❌ Error file processing.";
+          status.textContent = ("❌ Error file processing.", error);
           console.error("Error sending files:", error);
         });
       }
