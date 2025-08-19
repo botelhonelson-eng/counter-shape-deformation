@@ -25,6 +25,7 @@ def process_stl():
         stl_or_path = os.path.join(UPLOAD_FOLDER, request.files['stl_or'].filename)
         extensao = os.path.splitext(request.files['stl_or'].filename)[1].lower()
         if extensao == '.iv':
+            request.files['stl_or'].save(stl_or_path)
             stl_or = convert_to_stl_any(stl_or_path)
         else:
 
@@ -35,6 +36,7 @@ def process_stl():
         stl_def_path = os.path.join(UPLOAD_FOLDER, request.files['stl_def'].filename)
         extensao = os.path.splitext(request.files['stl_def'].filename)[1].lower()
         if extensao == '.iv':
+            request.files['stl_def'].save(stl_def_path)
             stl_def = convert_to_stl_any(stl_def_path)
         else:
             request.files['stl_def'].save(stl_def_path)
@@ -45,13 +47,13 @@ def process_stl():
         extensao = os.path.splitext(request.files['stl_med'].filename)[1].lower()
         
         if extensao == '.iv':
+            request.files['stl_med'].save(stl_med_path)
             stl_med = convert_to_stl_any(stl_med_path)
         else:
             request.files['stl_med'].save(stl_med_path)
 
             
             app.logger.error(stl_med_path)
-
 
             stl_med = trimesh.load(stl_med_path)   
 
