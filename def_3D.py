@@ -12,6 +12,20 @@ def def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, output_dir):
             multiple_hits=False
         )
         return locations[0] if len(locations) > 0 else []
+    
+    
+
+    def gerar_step(pontos, nome_ficheiro):
+        with open(nome_ficheiro, "w") as f:
+            f.write("ISO-10303-21;\nHEADER;\n")
+            f.write("FILE_DESCRIPTION(('Generated STEP file'),'1');\n")
+            f.write("FILE_NAME('pontos_gerados.stp','20250820',('User'),('Python Script'), '', 'Python', '');\n")
+            f.write("FILE_SCHEMA(('AUTOMOTIVE_DESIGN'));\nENDSEC;\nDATA;\n")
+            for i, ponto in enumerate(pontos, start=1):
+                x, y, z = ponto
+                f.write(f"#{i} = CARTESIAN_POINT('', ({x}, {y}, {z}));\n")
+            f.write("ENDSEC;\nEND-ISO-10303-21;\n")
+        
 
     limite_x_min = stl_or.bounds[0, 0]
     limite_x_max = stl_or.bounds[1, 0]
@@ -24,7 +38,7 @@ def def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, output_dir):
     linhas = []
     linha = []
     fator_comp = nivel_compensacao/100
-
+    pontos_stp = []
     while limite_y_min + inc_y < limite_y_max:
         inc_y += passo
         while limite_x_min + inc_x < limite_x_max:
@@ -39,7 +53,8 @@ def def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, output_dir):
             if len(inter_or) > 0 and len(inter_def) > 0 and len(inter_med) > 0:
                 compensacao = (inter_med[2] - inter_or[2]) * fator_comp
                 ponto_comp = [x, y, inter_def[2] - compensacao]
-                comp_pontos.append(ponto_comp)
+                pontos_stp.append(ponto_comp)
+                comp_pontos.append(ponto_comp)                
                 linha.append(ponto_comp)
 
         if linha:
@@ -47,17 +62,17 @@ def def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, output_dir):
         linha = []
         inc_x = 0
 
+    nome_pts_stp = os.path.join(output_dir, 'pts_stp.stp')
+    gerar_step(pontos_stp, nome_pts_stp)
     nome_pts = os.path.join(output_dir, 'pts_comp.pts')
     
     with open(nome_pts, "w") as ficheiro_pts:
-
         for ind_linha, linha in enumerate(linhas):   
             for ponto in linha:
                 texto_linha = str(ponto[0]) + ' ' + str(ponto[1]) + ' ' + str(ponto[2]) + '\n'
                 ficheiro_pts.writelines(texto_linha)
-
+        ficheiro_pts.close()
     
-    ficheiro_pts.close()
-    return nome_pts
+    return nome_pts, nome_pts_stp
 
 
