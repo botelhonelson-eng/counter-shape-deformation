@@ -58,12 +58,10 @@ def process_stl():
         passo = float(request.form.get('passo', 1.0))
         nivel_compensacao = float(request.form.get('nivel_compensacao', 100))
 
-        pts_path, pts_stp = def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, OUTPUT_FOLDER)
+        Lista_pontos, pts_stp = def_3D(stl_or, stl_def, stl_med, passo, nivel_compensacao, OUTPUT_FOLDER)
         filename = os.path.basename(pts_stp)
         
-
-        stl_compensacao, stl_filename = gerar_stl_delaunay(pts_path, OUTPUT_FOLDER)
-        
+        stl_compensacao, stl_filename = gerar_stl_delaunay(Lista_pontos, OUTPUT_FOLDER)
         
         stl_or.visual.face_colors = [0, 255, 0, 255]  # Verde
         stl_med.visual.face_colors = [0, 0, 255, 255]  # Azul
@@ -73,8 +71,7 @@ def process_stl():
 
         scene = trimesh.Scene([stl_or, stl_med, stl_def, stl_compensacao]) 
         
-        scene.export(os.path.join(app.root_path, 'static', 'output.glb'))
-        
+        scene.export(os.path.join(app.root_path, 'static', 'output.glb'))        
 
         return jsonify({
             "download_url": f"/download/{filename}",
@@ -97,3 +94,4 @@ def serve_output_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
