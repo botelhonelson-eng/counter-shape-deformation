@@ -20,8 +20,8 @@
 	      	<div class="box-container">
 	      		<div class="box-background"></div>
 	      		<div class="box-banner-title">
-	      			<h1>BS- Be Shapes</h1>
-	      			<p>Suporting you always</p>
+	      			<h1>Shape Transformer</h1>
+	      			
 	      		</div>
 	      	</div>
 	      	<div class="company-info-container">
@@ -40,8 +40,7 @@
           <div class="input-area">            
             <h2>Deformed surface calculation</h2>           
 
-            <div class="drop-zone" id="drop-or"> 
-              
+            <div class="drop-zone" id="drop-or">               
               <p>Drop here nominal shape</p>
               <input type="file" id="file-or" accept=".stl,.obj,.ply,.glb,.dae,.off,.3mf,.iv">
             </div>
@@ -108,7 +107,8 @@
           const file = e.dataTransfer.files[0];
           if (file && extensoesPermitidas.some(ext => file.name.toLowerCase().endsWith(ext))) {
             zone.file = file;
-            dropArea.querySelector('p').textContent = file.name;
+            dropArea.querySelector('p').textContent = `Drop here to change file - ${file.name}`;
+            
           } else {
             alert("Please select válid files");
           }
